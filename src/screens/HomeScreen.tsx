@@ -182,9 +182,6 @@ const HomeScreen = () => {
                 {/* Restaurant Feed Header */}
                 <View style={styles.feedHeader}>
                     <Text style={styles.feedTitle}>Curation for You</Text>
-                    <TouchableOpacity>
-                        <Text style={styles.viewAll}>View All</Text>
-                    </TouchableOpacity>
                 </View>
 
                 {/* Restaurants List */}
