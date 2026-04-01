@@ -5,6 +5,7 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
+    TextInput,
     Image,
     FlatList,
     ActivityIndicator,
@@ -15,7 +16,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import firestore from '@react-native-firebase/firestore';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons'; // Added Icon import
+import Icon from 'react-native-vector-icons/Ionicons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProp = any;
@@ -48,6 +49,11 @@ const RestaurantDetailScreen = () => {
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState('1');
     const [categories, setCategories] = useState<string[]>([]);
+    
+    // Search States
+    const [isSearchVisible, setIsSearchVisible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
     const doodleImage = require('../assets/doodle.png');
 
     useEffect(() => {
@@ -111,10 +117,14 @@ const RestaurantDetailScreen = () => {
         }
     };
 
-    const filteredMenuItems =
-        selectedCategory === 'All'
-            ? menuItems
-            : menuItems.filter((item) => item.category === selectedCategory);
+    // Filter by Category AND Search Query
+    const filteredMenuItems = menuItems.filter((item) => {
+        const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+        
+        return matchesCategory && matchesSearch;
+    });
 
     const renderMenuItem = ({ item }: { item: MenuItem }) => (
         <View style={styles.menuItemCard}>
@@ -162,7 +172,7 @@ const RestaurantDetailScreen = () => {
                 </TouchableOpacity>
                 <Text style={styles.topBarTitle}>Cravixy</Text>
                 <View style={styles.topBarActions}>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => setIsSearchVisible(!isSearchVisible)}>
                         <Icon name="search" size={24} color="#b6112a" />
                     </TouchableOpacity>
                     <TouchableOpacity>
@@ -170,6 +180,28 @@ const RestaurantDetailScreen = () => {
                     </TouchableOpacity>
                 </View>
             </View>
+
+            {/* Toggleable Search Bar */}
+            {isSearchVisible && (
+                <View style={styles.searchSection}>
+                    <View style={styles.searchBox}>
+                        <Icon name="search" size={20} color="#a06773" style={{ marginRight: 8 }} />
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder="Search menu items..."
+                            placeholderTextColor="#814c58"
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
+                            autoFocus
+                        />
+                        {searchQuery.length > 0 && (
+                            <TouchableOpacity onPress={() => setSearchQuery('')}>
+                                <Icon name="close-circle" size={20} color="#a06773" />
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                </View>
+            )}
 
             <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 70}}>
                 {/* Hero Image Section */}
@@ -218,7 +250,11 @@ const RestaurantDetailScreen = () => {
                                     styles.categoryTab,
                                     selectedCategory === category && styles.categoryTabActive,
                                 ]}
-                                onPress={() => setSelectedCategory(category)}
+                                onPress={() => {
+                                    setSelectedCategory(category);
+                                    // Optional: clear search when changing categories
+                                    // setSearchQuery('');
+                                }}
                             >
                                 <Text
                                     style={[
@@ -235,7 +271,9 @@ const RestaurantDetailScreen = () => {
 
                 {/* Menu Section Header */}
                 <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>{selectedCategory}</Text>
+                    <Text style={styles.sectionTitle}>
+                        {searchQuery ? 'Search Results' : selectedCategory}
+                    </Text>
                 </View>
 
                 {/* Menu Items Grid */}
@@ -252,7 +290,9 @@ const RestaurantDetailScreen = () => {
                 ) : (
                     <View style={styles.emptyState}>
                         <Icon name="fast-food-outline" size={48} color="#dc9ca8" style={{ marginBottom: 12 }} />
-                        <Text style={styles.emptyStateText}>No items in this category</Text>
+                        <Text style={styles.emptyStateText}>
+                            {searchQuery ? `No menu items found for "${searchQuery}"` : "No items in this category"}
+                        </Text>
                     </View>
                 )}
             </ScrollView>
@@ -299,6 +339,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 244, 244, 0.95)',
         borderBottomWidth: 1,
         borderBottomColor: '#ffd1d9',
+        zIndex: 10,
     },
     topBarTitle: {
         fontSize: 18,
@@ -309,6 +350,27 @@ const styles = StyleSheet.create({
     topBarActions: {
         flexDirection: 'row',
         gap: 16,
+    },
+    searchSection: {
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        backgroundColor: 'rgba(255, 244, 244, 0.95)',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ffd1d9',
+    },
+    searchBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#ffecee',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        height: 45,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 14,
+        color: '#4c212c',
+        paddingVertical: 0, // fixes Android padding issues
     },
     scrollContent: {
         flex: 1,
@@ -481,11 +543,13 @@ const styles = StyleSheet.create({
         paddingVertical: 40,
         justifyContent: 'center',
         alignItems: 'center',
+        paddingHorizontal: 32,
     },
     emptyStateText: {
         fontSize: 16,
         color: '#814c58',
         fontWeight: '600',
+        textAlign: 'center',
     },
     cartBar: {
         position: 'absolute',
