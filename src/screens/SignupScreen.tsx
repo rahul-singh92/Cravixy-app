@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
+import { getAuth, GoogleAuthProvider, signInWithCredential } from '@react-native-firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import {
     View,
     Text,
@@ -21,18 +23,51 @@ const SignupScreen = () => {
     const [termsAccepted, setTermsAccepted] = useState(false);
 
     useEffect(() => {
+        GoogleSignin.configure({
+            webClientId: '479173921547-6ar08994r6bjrfjan4mo6ro8a9epv355.apps.googleusercontent.com',
+        });
+
         const backAction = () => {
             navigation.navigate('Landing');
             return true;
         };
-        
+
         const backHandler = BackHandler.addEventListener(
             'hardwareBackPress',
             backAction,
         );
-        
+
         return () => backHandler.remove();
     }, [navigation]);
+
+    const handleGoogleSignIn = async () => {
+        try {
+            await GoogleSignin.hasPlayServices();
+
+            const userInfo = await GoogleSignin.signIn();
+
+            const idToken = userInfo.data?.idToken;
+
+            if (!idToken) throw new Error('No ID token');
+
+            const authInstance = getAuth();
+
+            const googleCredential = GoogleAuthProvider.credential(idToken);
+
+            const userCredential = await signInWithCredential(authInstance, googleCredential);
+
+            console.log('User:', {
+                name: userCredential.user.displayName,
+                email: userCredential.user.email,
+                uid: userCredential.user.uid,
+            });
+
+            navigation.navigate('Home');
+
+        } catch (error) {
+            console.log('Error:', error);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -108,7 +143,7 @@ const SignupScreen = () => {
                         </View>
 
                         {/* TERMS */}
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.termsRow}
                             onPress={() => setTermsAccepted(!termsAccepted)}
                         >
@@ -122,7 +157,7 @@ const SignupScreen = () => {
                         </TouchableOpacity>
 
                         {/* BUTTON */}
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.primaryBtn}
                             activeOpacity={0.85}
                         >
@@ -132,8 +167,8 @@ const SignupScreen = () => {
                         {/* LOGIN LINK */}
                         <Text style={styles.loginText}>
                             Already have an account?{' '}
-                            <Text 
-                                onPress={() => navigation.navigate('Login')} 
+                            <Text
+                                onPress={() => navigation.navigate('Login')}
                                 style={styles.link}
                             >
                                 Log In
@@ -150,7 +185,7 @@ const SignupScreen = () => {
                     </View>
 
                     {/* SOCIAL BUTTON */}
-                    <TouchableOpacity style={styles.socialBtn} activeOpacity={0.8}>
+                    <TouchableOpacity style={styles.socialBtn} activeOpacity={0.8} onPress={handleGoogleSignIn}>
                         <Image
                             source={require('../assets/google-logo.png')}
                             style={styles.googleLogo}

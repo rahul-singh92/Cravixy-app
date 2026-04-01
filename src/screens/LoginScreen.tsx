@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
+import { getAuth, GoogleAuthProvider, signInWithCredential } from '@react-native-firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import {
     View,
     Text,
@@ -20,18 +22,53 @@ const LoginScreen = () => {
     const navigation = useNavigation<NavigationProp>();
 
     useEffect(() => {
+        GoogleSignin.configure({
+            webClientId: '479173921547-6ar08994r6bjrfjan4mo6ro8a9epv355.apps.googleusercontent.com',
+        });
+
         const backAction = () => {
             navigation.navigate('Landing');
             return true;
         };
-        
+
         const backHandler = BackHandler.addEventListener(
             'hardwareBackPress',
             backAction,
         );
-        
+
         return () => backHandler.remove();
     }, [navigation]);
+
+
+    const handleGoogleSignIn = async () => {
+        try {
+            await GoogleSignin.hasPlayServices();
+
+            const userInfo = await GoogleSignin.signIn();
+
+            const idToken = userInfo.data?.idToken;
+
+            if (!idToken) throw new Error('No ID token');
+
+            const authInstance = getAuth();
+
+            const googleCredential = GoogleAuthProvider.credential(idToken);
+
+            const userCredential = await signInWithCredential(authInstance, googleCredential);
+
+            const user = userCredential.user;
+
+            console.log('User:', {
+                name: user.displayName,
+                email: user.email,
+            });
+
+            navigation.navigate('Home'); // ✅ go to Home
+
+        } catch (error) {
+            console.log('Error:', error);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -82,7 +119,7 @@ const LoginScreen = () => {
                     </View>
 
                     {/* LOGIN BUTTON */}
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.primaryBtn}
                         activeOpacity={0.85}
                     >
@@ -97,7 +134,7 @@ const LoginScreen = () => {
                     </View>
 
                     {/* SOCIAL BUTTON */}
-                    <TouchableOpacity style={styles.socialBtn} activeOpacity={0.8}>
+                    <TouchableOpacity style={styles.socialBtn} activeOpacity={0.8} onPress={handleGoogleSignIn}>
                         <Image
                             source={require('../assets/google-logo.png')}
                             style={styles.googleLogo}
