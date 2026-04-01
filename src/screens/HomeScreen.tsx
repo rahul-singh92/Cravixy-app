@@ -10,6 +10,7 @@ import {
     FlatList,
     ActivityIndicator,
     StatusBar,
+    BackHandler,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,7 +18,7 @@ import { RootStackParamList } from '../navigation/types';
 import firestore from '@react-native-firebase/firestore';
 import { getAuth } from '@react-native-firebase/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons'; // Added Icon import
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const doodleImage = require('../assets/doodle.png');
 
@@ -48,6 +49,21 @@ const HomeScreen = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [location] = useState(INDIAN_LOCATIONS[Math.floor(Math.random() * INDIAN_LOCATIONS.length)]);
+
+    // --- ADDED BACKHANDLER TO EXIT APP ---
+    useEffect(() => {
+        const backAction = () => {
+            BackHandler.exitApp(); // Exits the app instead of going back to Landing
+            return true; // Prevents default navigation behavior
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            backAction,
+        );
+
+        return () => backHandler.remove();
+    }, []);
 
     useEffect(() => {
         fetchRestaurants();
