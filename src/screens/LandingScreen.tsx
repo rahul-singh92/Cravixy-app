@@ -11,12 +11,27 @@ import {
     StatusBar,
     Image,
     BackHandler,
+    ActivityIndicator,
 } from 'react-native';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const LandingScreen = () => {
+interface LandingScreenProps {
+    isCheckingAuth?: boolean;
+}
+
+const LandingScreen: React.FC<LandingScreenProps> = ({ isCheckingAuth = false }) => {
     const navigation = useNavigation<NavigationProp>();
+    
+    useEffect(() => {
+        if (isCheckingAuth) {
+            const timer = setTimeout(() => {
+                navigation.navigate('Home');
+            }, 2500);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [isCheckingAuth, navigation]);
     
     useEffect(() => {
         const backAction = () => {
@@ -72,21 +87,33 @@ const LandingScreen = () => {
 
                     {/* Buttons Container */}
                     <View style={styles.buttonContainer}>
-                        <TouchableOpacity 
-                            style={styles.primaryBtn}
-                            activeOpacity={0.8}
-                            onPress={() => navigation.navigate('Signup')}
-                        >
-                            <Text style={styles.btnText}>Get Started</Text>
-                        </TouchableOpacity>
+                        {isCheckingAuth ? (
+                            <View style={styles.loaderContainer}>
+                                <ActivityIndicator 
+                                    size="large" 
+                                    color="#b6112a" 
+                                />
+                                <Text style={styles.loaderText}>Setting up your account...</Text>
+                            </View>
+                        ) : (
+                            <>
+                                <TouchableOpacity 
+                                    style={styles.primaryBtn}
+                                    activeOpacity={0.8}
+                                    onPress={() => navigation.navigate('Signup')}
+                                >
+                                    <Text style={styles.btnText}>Get Started</Text>
+                                </TouchableOpacity>
 
-                        <TouchableOpacity 
-                            style={styles.glassBtn}
-                            activeOpacity={0.8}
-                            onPress={() => navigation.navigate('Login')}
-                        >
-                            <Text style={styles.btnText}>Sign In</Text>
-                        </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={styles.glassBtn}
+                                    activeOpacity={0.8}
+                                    onPress={() => navigation.navigate('Login')}
+                                >
+                                    <Text style={styles.btnText}>Sign In</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
                     </View>
 
                     {/* User Avatars Section */}
@@ -250,5 +277,17 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 13,
         fontWeight: '500',
+    },
+    loaderContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 30,
+        gap: 16,
+    },
+    loaderText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+        marginTop: 8,
     },
 });
