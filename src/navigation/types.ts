@@ -2,5 +2,6 @@ export type RootStackParamList = {
   Landing: undefined;
   Login: undefined;
   Signup: undefined;
-  Home: undefined
+  Home: undefined;
+  RestaurantDetail: { restaurantId: string };
 };

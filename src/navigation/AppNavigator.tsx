@@ -9,6 +9,7 @@ import LandingScreen from '../screens/LandingScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import HomeScreen from '../screens/HomeScreen';
+import RestaurantDetailScreen from '../screens/RestaurantDetailScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -48,6 +49,7 @@ const AppNavigator = () => {
                             children={() => <LandingScreen isCheckingAuth={true} />}
                         />
                         <Stack.Screen name="Home" component={HomeScreen} />
+                        <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
                     </>
                 ) : (
                     // User is not logged in - show auth screens
@@ -59,6 +61,7 @@ const AppNavigator = () => {
                         <Stack.Screen name="Login" component={LoginScreen} />
                         <Stack.Screen name="Signup" component={SignupScreen} />
                         <Stack.Screen name="Home" component={HomeScreen} />
+                        <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
                     </>
                 )}
             </Stack.Navigator>
