@@ -16,6 +16,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import firestore from '@react-native-firebase/firestore';
 import { getAuth } from '@react-native-firebase/auth';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const doodleImage = require('../assets/doodle.png');
 
@@ -127,7 +128,7 @@ const HomeScreen = () => {
     );
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top']}>
             <StatusBar barStyle="dark-content" backgroundColor="#fff4f4" />
             
             {/* Top App Bar */}
@@ -229,7 +230,7 @@ const HomeScreen = () => {
                     <Text style={styles.navLabel}>Profile</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </SafeAreaView>
     );
 };
 

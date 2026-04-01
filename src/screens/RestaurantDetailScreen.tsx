@@ -14,6 +14,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import firestore from '@react-native-firebase/firestore';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProp = any;
@@ -150,8 +151,8 @@ const RestaurantDetailScreen = () => {
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#000" translucent />
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <StatusBar barStyle="dark-content" backgroundColor="#fff4f4" />
 
             {/* Top App Bar */}
             <View style={styles.topBar}>
@@ -169,7 +170,7 @@ const RestaurantDetailScreen = () => {
                 </View>
             </View>
 
-            <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 70}}>
                 {/* Hero Image Section */}
                 <View style={styles.heroSection}>
                     <Image
@@ -266,7 +267,7 @@ const RestaurantDetailScreen = () => {
                     </View>
                 </View>
             </View>
-        </View>
+        </SafeAreaView>
     );
 };
 
