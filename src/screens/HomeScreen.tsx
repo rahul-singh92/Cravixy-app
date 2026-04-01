@@ -17,6 +17,7 @@ import { RootStackParamList } from '../navigation/types';
 import firestore from '@react-native-firebase/firestore';
 import { getAuth } from '@react-native-firebase/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/Ionicons'; // Added Icon import
 
 const doodleImage = require('../assets/doodle.png');
 
@@ -99,7 +100,8 @@ const HomeScreen = () => {
                     resizeMode="cover"
                 />
                 <View style={styles.ratingBadge}>
-                    <Text style={styles.ratingText}>⭐ {item.rating}</Text>
+                    <Icon name="star" size={12} color="#f5c518" />
+                    <Text style={styles.ratingText}>{item.rating}</Text>
                 </View>
             </View>
 
@@ -108,10 +110,12 @@ const HomeScreen = () => {
                 
                 <View style={styles.infoRow}>
                     <View style={styles.infoItem}>
-                        <Text style={styles.infoLabel}>⏱ {item.deliveryTime}</Text>
+                        <Icon name="time-outline" size={14} color="#814c58" />
+                        <Text style={styles.infoLabel}>{item.deliveryTime}</Text>
                     </View>
                     <Text style={styles.divider}>•</Text>
                     <View style={styles.infoItem}>
+                        <Icon name="navigate-circle-outline" size={14} color="#814c58" />
                         <Text style={styles.infoLabel}>{item.distance}</Text>
                     </View>
                 </View>
@@ -134,7 +138,7 @@ const HomeScreen = () => {
             {/* Top App Bar */}
             <View style={styles.topBar}>
                 <View style={styles.locationInfo}>
-                    <Text style={styles.locationIcon}>📍</Text>
+                    <Icon name="location" size={24} color="#b6112a" />
                     <View>
                         <Text style={styles.deliverTo}>Deliver to</Text>
                         <Text style={styles.locationName}>{location.name}</Text>
@@ -164,7 +168,7 @@ const HomeScreen = () => {
                 {/* Search */}
                 <View style={styles.searchSection}>
                     <View style={styles.searchBox}>
-                        <Text style={styles.searchIcon}>🔍</Text>
+                        <Icon name="search" size={20} color="#a06773" style={{ marginRight: 8 }} />
                         <TextInput
                             style={styles.searchInput}
                             placeholder="Search for dishes, restaurants..."
@@ -198,6 +202,7 @@ const HomeScreen = () => {
                     />
                 ) : (
                     <View style={styles.emptyState}>
+                        <Icon name="restaurant-outline" size={48} color="#dc9ca8" style={{ marginBottom: 12 }} />
                         <Text style={styles.emptyStateText}>No restaurants found</Text>
                     </View>
                 )}
@@ -205,7 +210,7 @@ const HomeScreen = () => {
 
             {/* Floating Cart Button */}
             <TouchableOpacity style={styles.cartButton}>
-                <Text style={styles.cartIcon}>🛒</Text>
+                <Icon name="cart" size={24} color="#fff4f4" />
                 <View style={styles.cartBadge}>
                     <Text style={styles.cartBadgeText}>0</Text>
                 </View>
@@ -214,19 +219,19 @@ const HomeScreen = () => {
             {/* Bottom Navigation */}
             <View style={styles.bottomNav}>
                 <TouchableOpacity style={styles.navItem}>
-                    <Text style={styles.navIcon}>🍴</Text>
+                    <Icon name="restaurant" size={24} color="#b6112a" />
                     <Text style={[styles.navLabel, { color: '#b6112a' }]}>Explore</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.navItem}>
-                    <Text style={styles.navIcon}>🔍</Text>
+                    <Icon name="search" size={24} color="#4c212c" style={{ opacity: 0.6 }} />
                     <Text style={styles.navLabel}>Search</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.navItem}>
-                    <Text style={styles.navIcon}>📦</Text>
+                    <Icon name="receipt-outline" size={24} color="#4c212c" style={{ opacity: 0.6 }} />
                     <Text style={styles.navLabel}>Orders</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.navItem}>
-                    <Text style={styles.navIcon}>👤</Text>
+                    <Icon name="person-outline" size={24} color="#4c212c" style={{ opacity: 0.6 }} />
                     <Text style={styles.navLabel}>Profile</Text>
                 </TouchableOpacity>
             </View>
@@ -256,9 +261,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
-    },
-    locationIcon: {
-        fontSize: 18,
     },
     deliverTo: {
         fontSize: 10,
@@ -318,11 +320,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         height: 50,
     },
-    searchIcon: {
-        fontSize: 18,
-        marginRight: 8,
-        color: '#a06773',
-    },
     searchInput: {
         flex: 1,
         fontSize: 14,
@@ -372,6 +369,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
     },
     ratingText: {
         fontSize: 12,
@@ -394,6 +394,9 @@ const styles = StyleSheet.create({
     },
     infoItem: {
         flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
     },
     infoLabel: {
         fontSize: 14,
@@ -451,9 +454,6 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 8,
     },
-    cartIcon: {
-        fontSize: 24,
-    },
     cartBadge: {
         position: 'absolute',
         top: -4,
@@ -489,9 +489,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         gap: 4,
-    },
-    navIcon: {
-        fontSize: 24,
     },
     navLabel: {
         fontSize: 10,

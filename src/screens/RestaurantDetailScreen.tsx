@@ -15,6 +15,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import firestore from '@react-native-firebase/firestore';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/Ionicons'; // Added Icon import
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProp = any;
@@ -157,15 +158,15 @@ const RestaurantDetailScreen = () => {
             {/* Top App Bar */}
             <View style={styles.topBar}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Text style={styles.backButton}>←</Text>
+                    <Icon name="arrow-back" size={28} color="#b6112a" />
                 </TouchableOpacity>
                 <Text style={styles.topBarTitle}>Cravixy</Text>
                 <View style={styles.topBarActions}>
                     <TouchableOpacity>
-                        <Text style={styles.iconButton}>🔍</Text>
+                        <Icon name="search" size={24} color="#b6112a" />
                     </TouchableOpacity>
                     <TouchableOpacity>
-                        <Text style={styles.iconButton}>❤️</Text>
+                        <Icon name="heart-outline" size={24} color="#b6112a" />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -188,13 +189,16 @@ const RestaurantDetailScreen = () => {
                         <Text style={styles.restaurantName}>{restaurant?.name}</Text>
                         <View style={styles.heroInfo}>
                             <View style={styles.ratingBadge}>
-                                <Text style={styles.ratingBadgeText}>⭐ {restaurant?.rating}</Text>
+                                <Icon name="star" size={12} color="#fff" />
+                                <Text style={styles.ratingBadgeText}>{restaurant?.rating}</Text>
                             </View>
                             <View style={styles.infoItem}>
-                                <Text style={styles.infoText}>⏱ {restaurant?.deliveryTime}</Text>
+                                <Icon name="time-outline" size={14} color="#fff" />
+                                <Text style={styles.infoText}>{restaurant?.deliveryTime}</Text>
                             </View>
                             <View style={styles.infoItem}>
-                                <Text style={styles.infoText}>📍 {restaurant?.distance}</Text>
+                                <Icon name="location-outline" size={14} color="#fff" />
+                                <Text style={styles.infoText}>{restaurant?.distance}</Text>
                             </View>
                         </View>
                     </View>
@@ -247,6 +251,7 @@ const RestaurantDetailScreen = () => {
                     </View>
                 ) : (
                     <View style={styles.emptyState}>
+                        <Icon name="fast-food-outline" size={48} color="#dc9ca8" style={{ marginBottom: 12 }} />
                         <Text style={styles.emptyStateText}>No items in this category</Text>
                     </View>
                 )}
@@ -295,11 +300,6 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#ffd1d9',
     },
-    backButton: {
-        fontSize: 28,
-        color: '#b6112a',
-        fontWeight: 'bold',
-    },
     topBarTitle: {
         fontSize: 18,
         fontWeight: '900',
@@ -309,9 +309,6 @@ const styles = StyleSheet.create({
     topBarActions: {
         flexDirection: 'row',
         gap: 16,
-    },
-    iconButton: {
-        fontSize: 20,
     },
     scrollContent: {
         flex: 1,
@@ -354,6 +351,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     ratingBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
         backgroundColor: '#b6112a',
         paddingHorizontal: 8,
         paddingVertical: 4,
@@ -365,6 +365,9 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
     infoItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
         paddingHorizontal: 8,
         paddingVertical: 4,
