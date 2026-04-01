@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import { getAuth, GoogleAuthProvider, signInWithCredential } from '@react-native-firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithCredential, createUserWithEmailAndPassword } from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import firestore from '@react-native-firebase/firestore';
+import { ActivityIndicator } from 'react-native';
 import {
     View,
     Text,
@@ -21,6 +23,12 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const SignupScreen = () => {
     const navigation = useNavigation<NavigationProp>();
     const [termsAccepted, setTermsAccepted] = useState(false);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
 
     useEffect(() => {
         GoogleSignin.configure({
@@ -41,36 +49,96 @@ const SignupScreen = () => {
     }, [navigation]);
 
     const handleGoogleSignIn = async () => {
+        if (loading) return;
+
+        setLoading(true);
         try {
             await GoogleSignin.hasPlayServices();
 
             const userInfo = await GoogleSignin.signIn();
-
             const idToken = userInfo.data?.idToken;
 
             if (!idToken) throw new Error('No ID token');
 
             const authInstance = getAuth();
-
             const googleCredential = GoogleAuthProvider.credential(idToken);
 
             const userCredential = await signInWithCredential(authInstance, googleCredential);
+            const user = userCredential.user;
 
-            console.log('User:', {
-                name: userCredential.user.displayName,
-                email: userCredential.user.email,
-                uid: userCredential.user.uid,
-            });
+            await firestore()
+                .collection('users')
+                .doc(user.uid)
+                .set({
+                    name: user.displayName,
+                    email: user.email,
+                    phone: null,
+                    provider: 'google',
+                }, { merge: true });
 
             navigation.navigate('Home');
 
-        } catch (error) {
-            console.log('Error:', error);
+        } catch (error: any) {
+            setErrorMsg('Google Sign-in Failed');
+            setTimeout(() => setErrorMsg(''), 5000);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSignup = async () => {
+        if (loading) return;
+
+        setLoading(true);
+
+        try {
+            if (!name || !email || !phone || !password) {
+                console.log('Please fill all fields');
+                return;
+            }
+
+            if (!termsAccepted) {
+                console.log('Accept terms first');
+                return;
+            }
+
+            const authInstance = getAuth();
+
+            const userCredential = await createUserWithEmailAndPassword(
+                authInstance,
+                email,
+                password
+            );
+
+            const user = userCredential.user;
+
+            await firestore()
+                .collection('users')
+                .doc(user.uid)
+                .set({
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    provider: 'email',
+                }, { merge: true });
+
+            navigation.navigate('Home');
+
+        } catch (error: any) {
+            setErrorMsg(error.message || 'Signup Failed');
+            setTimeout(() => setErrorMsg(''), 5000);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <SafeAreaView style={styles.container}>
+            {errorMsg ? (
+                <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{errorMsg}</Text>
+                </View>
+            ) : null}
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
                 {/* HEADER */}
@@ -96,6 +164,8 @@ const SignupScreen = () => {
                             <Text style={styles.label}>Full Name</Text>
                             <View style={styles.inputWrapper}>
                                 <TextInput
+                                    value={name}
+                                    onChangeText={setName}
                                     placeholder="Enter your name"
                                     placeholderTextColor="#81485880"
                                     style={styles.input}
@@ -108,6 +178,8 @@ const SignupScreen = () => {
                             <Text style={styles.label}>Email</Text>
                             <View style={styles.inputWrapper}>
                                 <TextInput
+                                    value={email}
+                                    onChangeText={setEmail}
                                     placeholder="name@example.com"
                                     placeholderTextColor="#81485880"
                                     keyboardType="email-address"
@@ -121,7 +193,9 @@ const SignupScreen = () => {
                             <Text style={styles.label}>Phone Number</Text>
                             <View style={styles.inputWrapper}>
                                 <TextInput
-                                    placeholder="+91 9876543210"
+                                    value={phone}
+                                    onChangeText={setPhone}
+                                    placeholder="7877xxxxxx"
                                     placeholderTextColor="#81485880"
                                     keyboardType="phone-pad"
                                     style={styles.input}
@@ -134,6 +208,8 @@ const SignupScreen = () => {
                             <Text style={styles.label}>Password</Text>
                             <View style={styles.inputWrapper}>
                                 <TextInput
+                                    value={password}
+                                    onChangeText={setPassword}
                                     placeholder="Min. 8 characters"
                                     placeholderTextColor="#81485880"
                                     secureTextEntry
@@ -158,10 +234,16 @@ const SignupScreen = () => {
 
                         {/* BUTTON */}
                         <TouchableOpacity
-                            style={styles.primaryBtn}
+                            style={[styles.primaryBtn, loading && { opacity: 0.6 }]}
                             activeOpacity={0.85}
+                            onPress={handleSignup}
+                            disabled={loading}
                         >
-                            <Text style={styles.btnText}>Sign Up</Text>
+                            {loading ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <Text style={styles.btnText}>Sign Up</Text>
+                            )}
                         </TouchableOpacity>
 
                         {/* LOGIN LINK */}
@@ -185,12 +267,23 @@ const SignupScreen = () => {
                     </View>
 
                     {/* SOCIAL BUTTON */}
-                    <TouchableOpacity style={styles.socialBtn} activeOpacity={0.8} onPress={handleGoogleSignIn}>
-                        <Image
-                            source={require('../assets/google-logo.png')}
-                            style={styles.googleLogo}
-                        />
-                        <Text style={styles.socialBtnText}>Continue with Google</Text>
+                    <TouchableOpacity
+                        style={[styles.socialBtn, loading && { opacity: 0.6 }]}
+                        activeOpacity={0.8}
+                        onPress={handleGoogleSignIn}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <ActivityIndicator color="#b6112a" />
+                        ) : (
+                            <>
+                                <Image
+                                    source={require('../assets/google-logo.png')}
+                                    style={styles.googleLogo}
+                                />
+                                <Text style={styles.socialBtnText}>Continue with Google</Text>
+                            </>
+                        )}
                     </TouchableOpacity>
 
                 </View>
@@ -399,5 +492,21 @@ const styles = StyleSheet.create({
         color: '#4c212c',
         fontWeight: '600',
         fontSize: 14,
+    },
+    errorContainer: {
+        position: 'absolute',
+        top: 10,
+        left: 16,
+        right: 16,
+        backgroundColor: '#ff4d4f',
+        padding: 12,
+        borderRadius: 10,
+        zIndex: 999,
+    },
+
+    errorText: {
+        color: '#fff',
+        textAlign: 'center',
+        fontWeight: '600',
     },
 });
