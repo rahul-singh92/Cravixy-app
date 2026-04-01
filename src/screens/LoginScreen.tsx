@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { getAuth, GoogleAuthProvider, signInWithCredential } from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { ActivityIndicator } from 'react-native';
+import { signInWithEmailAndPassword } from '@react-native-firebase/auth';
 import {
     View,
     Text,
@@ -20,6 +22,10 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const LoginScreen = () => {
     const navigation = useNavigation<NavigationProp>();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
 
     useEffect(() => {
         GoogleSignin.configure({
@@ -70,8 +76,41 @@ const LoginScreen = () => {
         }
     };
 
+    const handleLogin = async () => {
+        if (loading) return;
+
+        setLoading(true);
+
+        try {
+            if (!email || !password) {
+                throw new Error('Enter email and password');
+            }
+
+            const authInstance = getAuth();
+
+            await signInWithEmailAndPassword(
+                authInstance,
+                email,
+                password
+            );
+
+            navigation.navigate('Home');
+
+        } catch (error: any) {
+            setErrorMsg(error.message || 'Login Failed');
+            setTimeout(() => setErrorMsg(''), 5000);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
+            {errorMsg ? (
+                <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{errorMsg}</Text>
+                </View>
+            ) : null}
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
                 {/* HEADER */}
@@ -90,9 +129,11 @@ const LoginScreen = () => {
 
                     {/* INPUTS */}
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Email or Phone</Text>
+                        <Text style={styles.label}>Email</Text>
                         <View style={styles.inputWrapper}>
                             <TextInput
+                                value={email}
+                                onChangeText={setEmail}
                                 placeholder="name@example.com"
                                 placeholderTextColor="#81485880"
                                 style={styles.input}
@@ -110,6 +151,8 @@ const LoginScreen = () => {
 
                         <View style={styles.inputWrapper}>
                             <TextInput
+                                value={password}
+                                onChangeText={setPassword}
                                 placeholder="Enter your password"
                                 placeholderTextColor="#81485880"
                                 secureTextEntry
@@ -120,10 +163,16 @@ const LoginScreen = () => {
 
                     {/* LOGIN BUTTON */}
                     <TouchableOpacity
-                        style={styles.primaryBtn}
+                        style={[styles.primaryBtn, loading && { opacity: 0.6 }]}
                         activeOpacity={0.85}
+                        onPress={handleLogin}
+                        disabled={loading}
                     >
-                        <Text style={styles.btnText}>Log In</Text>
+                        {loading ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <Text style={styles.btnText}>Log In</Text>
+                        )}
                     </TouchableOpacity>
 
                     {/* DIVIDER */}
@@ -134,12 +183,23 @@ const LoginScreen = () => {
                     </View>
 
                     {/* SOCIAL BUTTON */}
-                    <TouchableOpacity style={styles.socialBtn} activeOpacity={0.8} onPress={handleGoogleSignIn}>
-                        <Image
-                            source={require('../assets/google-logo.png')}
-                            style={styles.googleLogo}
-                        />
-                        <Text style={styles.socialBtnText}>Continue with Google</Text>
+                    <TouchableOpacity
+                        style={[styles.socialBtn, loading && { opacity: 0.6 }]}
+                        activeOpacity={0.8}
+                        onPress={handleGoogleSignIn}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <ActivityIndicator color="#b6112a" />
+                        ) : (
+                            <>
+                                <Image
+                                    source={require('../assets/google-logo.png')}
+                                    style={styles.googleLogo}
+                                />
+                                <Text style={styles.socialBtnText}>Continue with Google</Text>
+                            </>
+                        )}
                     </TouchableOpacity>
 
                     {/* SIGNUP */}
@@ -333,5 +393,21 @@ const styles = StyleSheet.create({
     signupLink: {
         color: '#b6112a',
         fontWeight: '700',
+    },
+    errorContainer: {
+        position: 'absolute',
+        top: 10,
+        left: 16,
+        right: 16,
+        backgroundColor: '#ff4d4f',
+        padding: 12,
+        borderRadius: 10,
+        zIndex: 999,
+    },
+
+    errorText: {
+        color: '#fff',
+        textAlign: 'center',
+        fontWeight: '600',
     },
 });
