@@ -12,5 +12,4 @@ export default function App() {
       <AppNavigator />
     </SafeAreaProvider>
   );
-  // return <LandingScreen />;
 }

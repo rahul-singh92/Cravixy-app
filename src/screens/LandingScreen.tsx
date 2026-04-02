@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
+import { getAuth } from '@react-native-firebase/auth';
 import {
     View,
     Text,
@@ -23,15 +24,31 @@ interface LandingScreenProps {
 const LandingScreen: React.FC<LandingScreenProps> = ({ isCheckingAuth = false }) => {
     const navigation = useNavigation<NavigationProp>();
     
-    useEffect(() => {
-        if (isCheckingAuth) {
-            const timer = setTimeout(() => {
-                navigation.navigate('Home');
-            }, 2500);
+    // useEffect(() => {
+    //     if (isCheckingAuth) {
+    //         const timer = setTimeout(() => {
+    //             navigation.navigate('Home');
+    //         }, 2500);
             
-            return () => clearTimeout(timer);
-        }
-    }, [isCheckingAuth, navigation]);
+    //         return () => clearTimeout(timer);
+    //     }
+    // }, [isCheckingAuth, navigation]);
+
+    useEffect(() => {
+      if (isCheckingAuth) {
+        const timer = setTimeout(() => {
+          const user = getAuth().currentUser;
+    
+          if (user) {
+            navigation.replace('Home');   // logged in
+          } else {
+            navigation.replace('Landing'); // stay here
+          }
+        }, 2500);
+    
+        return () => clearTimeout(timer);
+      }
+    }, [isCheckingAuth]);
     
     useEffect(() => {
         const backAction = () => {

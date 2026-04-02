@@ -12,6 +12,7 @@ import HomeScreen from '../screens/HomeScreen';
 import RestaurantDetailScreen from '../screens/RestaurantDetailScreen';
 import SearchScreen from '../screens/SearchScreen';
 import OrdersScreen from '../screens/OrdersScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -21,7 +22,7 @@ const AppNavigator = () => {
 
     useEffect(() => {
         const auth = getAuth();
-        
+
         // Check auth state on app start
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUserExists(!!user);
@@ -43,34 +44,34 @@ const AppNavigator = () => {
     return (
         <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
+
                 {userExists ? (
-                    // User is logged in - show all screens with Home as first
+                    // 🔐 LOGGED IN FLOW
                     <>
-                        <Stack.Screen 
-                            name="Landing" 
+                        {/* Landing only for splash animation */}
+                        <Stack.Screen
+                            name="Landing"
                             children={() => <LandingScreen isCheckingAuth={true} />}
                         />
+
                         <Stack.Screen name="Home" component={HomeScreen} />
                         <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
                         <Stack.Screen name="Search" component={SearchScreen} />
                         <Stack.Screen name="Orders" component={OrdersScreen} />
-
+                        <Stack.Screen name="Profile" component={ProfileScreen} />
                     </>
                 ) : (
-                    // User is not logged in - show auth screens
+                    // 🔓 NOT LOGGED IN FLOW
                     <>
-                        <Stack.Screen 
-                            name="Landing" 
+                        <Stack.Screen
+                            name="Landing"
                             children={() => <LandingScreen isCheckingAuth={false} />}
                         />
                         <Stack.Screen name="Login" component={LoginScreen} />
                         <Stack.Screen name="Signup" component={SignupScreen} />
-                        <Stack.Screen name="Home" component={HomeScreen} />
-                        <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
-                        <Stack.Screen name="Search" component={SearchScreen} />
-                        <Stack.Screen name="Orders" component={OrdersScreen} />
                     </>
                 )}
+
             </Stack.Navigator>
         </NavigationContainer>
     );
