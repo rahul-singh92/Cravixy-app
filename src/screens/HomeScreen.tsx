@@ -271,7 +271,7 @@ const HomeScreen = () => {
                     <Icon name="search" size={24} color="#4c212c" style={{ opacity: 0.6 }} />
                     <Text style={styles.navLabel}>Search</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
+                <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Orders')}>
                     <Icon name="receipt-outline" size={24} color="#4c212c" style={{ opacity: 0.6 }} />
                     <Text style={styles.navLabel}>Orders</Text>
                 </TouchableOpacity>

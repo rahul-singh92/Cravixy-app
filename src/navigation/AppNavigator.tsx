@@ -11,6 +11,7 @@ import SignupScreen from '../screens/SignupScreen';
 import HomeScreen from '../screens/HomeScreen';
 import RestaurantDetailScreen from '../screens/RestaurantDetailScreen';
 import SearchScreen from '../screens/SearchScreen';
+import OrdersScreen from '../screens/OrdersScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -52,6 +53,8 @@ const AppNavigator = () => {
                         <Stack.Screen name="Home" component={HomeScreen} />
                         <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
                         <Stack.Screen name="Search" component={SearchScreen} />
+                        <Stack.Screen name="Orders" component={OrdersScreen} />
+
                     </>
                 ) : (
                     // User is not logged in - show auth screens
@@ -65,6 +68,7 @@ const AppNavigator = () => {
                         <Stack.Screen name="Home" component={HomeScreen} />
                         <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
                         <Stack.Screen name="Search" component={SearchScreen} />
+                        <Stack.Screen name="Orders" component={OrdersScreen} />
                     </>
                 )}
             </Stack.Navigator>

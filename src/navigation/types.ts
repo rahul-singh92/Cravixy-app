@@ -4,5 +4,6 @@ export type RootStackParamList = {
   Signup: undefined;
   Home: undefined;
   Search: undefined;
+  Orders: undefined;
   RestaurantDetail: { restaurantId: string };
 };
