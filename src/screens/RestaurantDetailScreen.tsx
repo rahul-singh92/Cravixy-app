@@ -17,6 +17,7 @@ import { RootStackParamList } from '../navigation/types';
 import firestore from '@react-native-firebase/firestore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProp = any;
@@ -49,7 +50,11 @@ const RestaurantDetailScreen = () => {
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState('1');
     const [categories, setCategories] = useState<string[]>([]);
-    
+    const [isCartLoaded, setIsCartLoaded] = useState(false);
+    const [cart, setCart] = useState<{
+        [restaurantId: string]: { [itemId: string]: number }
+    }>({});
+
     // Search States
     const [isSearchVisible, setIsSearchVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -57,8 +62,95 @@ const RestaurantDetailScreen = () => {
     const doodleImage = require('../assets/doodle.png');
 
     useEffect(() => {
+        if (!isCartLoaded) return;
+
+        const saveCart = async () => {
+            try {
+                await AsyncStorage.setItem('cart', JSON.stringify(cart));
+            } catch (err) {
+                console.log('Save error:', err);
+            }
+        };
+
+        saveCart();
+    }, [cart, isCartLoaded]);
+
+    useEffect(() => {
+        const loadCart = async () => {
+            try {
+                const data = await AsyncStorage.getItem('cart');
+
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    if (typeof parsed === 'object') {
+                        setCart(parsed);
+                    }
+                }
+
+                setIsCartLoaded(true);
+            } catch (err) {
+                console.log('Cart load error:', err);
+            }
+        };
+
+        loadCart();
+    }, []);
+
+    useEffect(() => {
+        console.log("CURRENT CART:", cart);
+    }, [cart]);
+
+    useEffect(() => {
         fetchRestaurantAndMenu();
     }, []);
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', async () => {
+            const data = await AsyncStorage.getItem('cart');
+            if (data) {
+                setCart(JSON.parse(data));
+            }
+        });
+
+        return unsubscribe;
+    }, []);
+
+    const addItem = (id: string) => {
+        setCart(prev => ({
+            ...prev,
+            [restaurantId]: {
+                ...prev[restaurantId],
+                [id]: (prev[restaurantId]?.[id] || 0) + 1
+            }
+        }));
+    };
+
+    const removeItem = (id: string) => {
+        setCart(prev => {
+            const restaurantCart = { ...prev[restaurantId] };
+
+            if (restaurantCart[id] === 1) {
+                delete restaurantCart[id];
+            } else {
+                restaurantCart[id] -= 1;
+            }
+
+            return {
+                ...prev,
+                [restaurantId]: restaurantCart
+            };
+        });
+    };
+
+    const totalPrice = menuItems.reduce((total, item) => {
+        const qty = cart[restaurantId]?.[item.id] || 0;
+        return total + qty * Number(item.price);
+    }, 0);
+
+    const totalItems = Object.values(cart[restaurantId] || {}).reduce(
+        (sum, qty) => sum + qty,
+        0
+    );
 
     const fetchRestaurantAndMenu = async () => {
         try {
@@ -120,9 +212,9 @@ const RestaurantDetailScreen = () => {
     // Filter by Category AND Search Query
     const filteredMenuItems = menuItems.filter((item) => {
         const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                              (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
-        
+        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+
         return matchesCategory && matchesSearch;
     });
 
@@ -135,9 +227,26 @@ const RestaurantDetailScreen = () => {
                 )}
                 <View style={styles.menuItemFooter}>
                     <Text style={styles.menuItemPrice}>₹{item.price}</Text>
-                    <TouchableOpacity style={styles.addButton}>
-                        <Text style={styles.addButtonText}>Add</Text>
-                    </TouchableOpacity>
+                    {!cart[restaurantId]?.[item.id] ? (
+                        <TouchableOpacity
+                            style={styles.addButton}
+                            onPress={() => addItem(item.id)}
+                        >
+                            <Text style={styles.addButtonText}>Add</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <View style={styles.counterContainer}>
+                            <TouchableOpacity onPress={() => removeItem(item.id)}>
+                                <Text style={styles.counterBtn}>-</Text>
+                            </TouchableOpacity>
+
+                            <Text style={styles.counterText}>{cart[restaurantId]?.[item.id]}</Text>
+
+                            <TouchableOpacity onPress={() => addItem(item.id)}>
+                                <Text style={styles.counterBtn}>+</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
             </View>
             <Image
@@ -203,7 +312,7 @@ const RestaurantDetailScreen = () => {
                 </View>
             )}
 
-            <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 70}}>
+            <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 70 }}>
                 {/* Hero Image Section */}
                 <View style={styles.heroSection}>
                     <Image
@@ -301,11 +410,11 @@ const RestaurantDetailScreen = () => {
             <View style={styles.cartBar}>
                 <View style={styles.cartBarContent}>
                     <View>
-                        <Text style={styles.cartBarLabel}>Your Selection</Text>
-                        <Text style={styles.cartBarItems}>View Cart (0 items)</Text>
+                        <Text style={styles.cartBarItems}>View Cart ({totalItems} items)</Text>
+                        <Text style={styles.cartBarPrice}>₹{totalPrice}</Text>
                     </View>
                     <View style={styles.cartBarRight}>
-                        <Text style={styles.cartBarPrice}>₹0</Text>
+                        <Text style={styles.cartBarPrice}>₹{totalPrice}</Text>
                         <TouchableOpacity style={styles.checkoutButton}>
                             <Text style={styles.checkoutButtonText}>Checkout</Text>
                         </TouchableOpacity>
@@ -599,5 +708,26 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 12,
         fontWeight: '700',
+    },
+    counterContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#ffd1d9',
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        gap: 10,
+    },
+
+    counterBtn: {
+        fontSize: 16,
+        fontWeight: '900',
+        color: '#b6112a',
+    },
+
+    counterText: {
+        fontSize: 14,
+        fontWeight: '800',
+        color: '#4c212c',
     },
 });

@@ -15,10 +15,11 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import firestore from '@react-native-firebase/firestore';
+import firestore, { count } from '@react-native-firebase/firestore';
 import { getAuth } from '@react-native-firebase/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const doodleImage = require('../assets/doodle.png');
 
@@ -49,6 +50,7 @@ const HomeScreen = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [location] = useState(INDIAN_LOCATIONS[Math.floor(Math.random() * INDIAN_LOCATIONS.length)]);
+    const [cartCount, setCartCount] = useState(0);
 
     // --- ADDED BACKHANDLER TO EXIT APP ---
     useEffect(() => {
@@ -64,6 +66,33 @@ const HomeScreen = () => {
 
         return () => backHandler.remove();
     }, []);
+    useEffect(() => {
+        const loadCart = async () => {
+            const data = await AsyncStorage.getItem('cart');
+
+            if (data) {
+                const cart = JSON.parse(data);
+
+                let total = 0;
+
+                Object.values(cart).forEach((restaurant: any) => {
+                    Object.values(restaurant).forEach((qty: any) => {
+                        total += qty;
+                    });
+                });
+
+                setCartCount(total);
+            }
+        };
+
+        const unsubscribe = navigation.addListener('focus', loadCart);
+
+        return unsubscribe;
+    }, []);
+
+    useEffect(() => {
+        console.log("CURRENT CART:", count);
+    }, [count]);
 
     useEffect(() => {
         fetchRestaurants();
@@ -225,7 +254,7 @@ const HomeScreen = () => {
             <TouchableOpacity style={styles.cartButton}>
                 <Icon name="cart" size={24} color="#fff4f4" />
                 <View style={styles.cartBadge}>
-                    <Text style={styles.cartBadgeText}>0</Text>
+                    <Text style={styles.cartBadgeText}>{cartCount}</Text>
                 </View>
             </TouchableOpacity>
 
