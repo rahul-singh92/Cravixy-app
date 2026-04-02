@@ -19,25 +19,20 @@ It provides a smooth user experience with authentication, restaurant browsing, o
 
 ## App Screens
 
-### Landing Screen
+<div align="center">
 
-![Landing](./assets/Landing.JPG)
+### Landing / Login / Home
 
-### Log In Screen
+<img src="./assets/Landing.JPG" width="30%" />
+<img src="./assets/LogIn.JPG" width="30%" />
+<img src="./assets/Home.JPG" width="30%" />
 
-![Log In](./assets/LogIn.JPG)
+### Menu / Profile
 
-### Home Screen
+<img src="./assets/MenuList.JPG" width="30%" />
+<img src="./assets/Profile.JPG" width="30%" />
 
-![Home](./assets/Home.JPG)
-
-### Menu List Screen
-
-![Menu List](./assets/MenuList.JPG)
-
-### Profile Screen
-
-![Profile](./assets/Profile.JPG)
+</div>
 
 ---
 
