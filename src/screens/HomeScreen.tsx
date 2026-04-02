@@ -73,7 +73,7 @@ const HomeScreen = () => {
         try {
             setLoading(true);
             const snapshot = await firestore().collection('restaurants').get();
-            
+
             const restaurantsList: Restaurant[] = [];
             snapshot.forEach((doc) => {
                 const data = doc.data();
@@ -87,7 +87,7 @@ const HomeScreen = () => {
                     distance: `${Math.floor(Math.random() * 5) + 0.5} km`,
                 });
             });
-            
+
             setRestaurants(restaurantsList);
         } catch (error) {
             console.log('Error fetching restaurants:', error);
@@ -123,7 +123,7 @@ const HomeScreen = () => {
 
             <View style={styles.cardContent}>
                 <Text style={styles.restaurantName}>{item.name}</Text>
-                
+
                 <View style={styles.infoRow}>
                     <View style={styles.infoItem}>
                         <Icon name="time-outline" size={14} color="#814c58" />
@@ -150,7 +150,7 @@ const HomeScreen = () => {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <StatusBar barStyle="dark-content" backgroundColor="#fff4f4" />
-            
+
             {/* Top App Bar */}
             <View style={styles.topBar}>
                 <View style={styles.locationInfo}>
@@ -160,7 +160,7 @@ const HomeScreen = () => {
                         <Text style={styles.locationName}>{location.name}</Text>
                     </View>
                 </View>
-                
+
                 <View style={styles.topBarRight}>
                     <Text style={styles.logo}>Cravixy</Text>
                     {user?.photoURL && (
@@ -235,7 +235,10 @@ const HomeScreen = () => {
                     <Icon name="restaurant" size={24} color="#b6112a" />
                     <Text style={[styles.navLabel, { color: '#b6112a' }]}>Explore</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
+                <TouchableOpacity
+                    style={styles.navItem}
+                    onPress={() => navigation.navigate('Search')}
+                >
                     <Icon name="search" size={24} color="#4c212c" style={{ opacity: 0.6 }} />
                     <Text style={styles.navLabel}>Search</Text>
                 </TouchableOpacity>

@@ -10,6 +10,7 @@ import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import HomeScreen from '../screens/HomeScreen';
 import RestaurantDetailScreen from '../screens/RestaurantDetailScreen';
+import SearchScreen from '../screens/SearchScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -50,6 +51,7 @@ const AppNavigator = () => {
                         />
                         <Stack.Screen name="Home" component={HomeScreen} />
                         <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
+                        <Stack.Screen name="Search" component={SearchScreen} />
                     </>
                 ) : (
                     // User is not logged in - show auth screens
@@ -62,6 +64,7 @@ const AppNavigator = () => {
                         <Stack.Screen name="Signup" component={SignupScreen} />
                         <Stack.Screen name="Home" component={HomeScreen} />
                         <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
+                        <Stack.Screen name="Search" component={SearchScreen} />
                     </>
                 )}
             </Stack.Navigator>
